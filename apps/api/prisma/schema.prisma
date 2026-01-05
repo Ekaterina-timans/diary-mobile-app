@@ -1,0 +1,304 @@
+// Diary App — Prisma schema (MySQL)
+// Features:
+// - Users with displayName
+// - Journals (multiple diaries/books)
+// - Entries (daily or freeform)
+// - Notes (pinned + last opened)
+// - Reminders
+// - Attachments (images/audio/files)
+// - Settings stored as JSON (theme, fonts, privacy, biometric toggle, hide in app switcher, etc.)
+// - Soft delete + updatedAt for sync
+// - Refresh tokens (hashed) for rotation
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url = env("DATABASE_URL")
+}
+
+enum AttachmentType {
+  IMAGE
+  AUDIO // запись голоса или аудио файл
+  FILE // pdf, doc
+}
+
+enum DayLinkType {
+  NOTE
+  JOURNAL
+  JOURNAL_PAGE
+}
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  passwordHash String
+  displayName String // имя пользователя
+
+  settings Json? // JSON объект с настройками пользователя
+  // {
+  //   "theme": "dark",
+  //   "fontFamily": "serif",
+  //   "fontSize": "md",
+  //   "showMoodInCalendar": true,
+  //   "requireBiometric": true,
+  //   "autoLockSeconds": 60,
+  //   "hideInAppSwitcher": true,
+  //   "reduceMotion": false
+  // }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  journals Journal[]
+  journalPages  JournalPage[]
+  notes Note[]
+  calendarDays  CalendarDay[]
+  dayLinks DayLink[]
+  reminders Reminder[]
+  refreshTokens RefreshToken[]
+  attachments Attachment[]
+  moodTags MoodTag[]
+
+  @@index([deletedAt])
+}
+
+// дневник
+model Journal {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title String // название дневника
+
+  appearence Json? // индивидуальные настройки
+  // {
+  //   paperStyle: "blank" | "lined" | "grid" | "dots",
+  //   fontFamily: "...",
+  //   fontSize: "...",
+  //   accentColor: "#...",
+  //   coverStyle: "..."
+  // }
+
+  pinned Boolean @default(false) // закреплен на главной
+  pinnedAt DateTime? // время для сортировки
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  pages JournalPage[]
+
+  @@index([userId, pinned])
+  @@index([userId, pinnedAt])
+  @@index([userId, updatedAt])
+  @@index([userId, deletedAt])
+}
+
+// страница дневника
+model JournalPage {
+  id String @id @default(cuid())
+  
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  journalId String
+  journal Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+
+  pageIndex Int
+
+  contentJson Json?
+  contentPlain String?
+
+  lastOpenedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  attachments Attachment[]
+
+  @@unique([journalId, pageIndex])
+  @@index([userId, journalId, updatedAt])
+  @@index([userId, journalId, deletedAt])
+  @@index([journalId, lastOpenedAt])
+}
+
+// заметка
+model Note {
+  id String @id @default(cuid())
+
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title String // название заметки
+  contentJson Json? // full rich-text от Tiptap (форматирование, картинки, underline, цвет)
+  contentPlain String? // простой текст (отображать превью на главной, делать поиск, показывать “краткое описание дня”)
+
+  pinned Boolean @default(false)
+  pinnedAt DateTime?
+  lastOpenedAt DateTime? // последняя открытая заметка
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  attachments Attachment[]
+
+  @@index([userId, pinned])
+  @@index([userId, pinnedAt])
+  @@index([userId, lastOpenedAt])
+  @@index([userId, updatedAt])
+  @@index([userId, deletedAt])
+}
+
+model MoodTag {
+  id String @id @default(cuid())
+
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  label String
+  emoji String?
+  color String?
+  score Int?
+  sortOrder Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  calendarDays CalendarDay[]
+
+  @@unique([userId, label])
+  @@index([userId, updatedAt])
+  @@index([userId, deletedAt])
+}
+
+model CalendarDay {
+  id String @id @default(cuid())
+
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  dayDate DateTime @db.Date
+
+  moodTagId String?
+  moodTag MoodTag? @relation(fields: [moodTagId], references: [id], onDelete: SetNull)
+
+  summary String? // небольшой текст в дате календаря
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  reminders Reminder[]
+  links DayLink[]
+
+  @@unique([userId, dayDate])
+  @@index([userId, updatedAt])
+  @@index([userId, deletedAt])
+}
+
+// напоминания
+model Reminder {
+  id String @id @default(cuid())
+
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  calendarDayId String?
+  calendarDay CalendarDay? @relation(fields: [calendarDayId], references: [id], onDelete: SetNull)
+
+  title String
+  body String?
+
+  remindAt DateTime
+
+  repeatRule Json? // хранение повторений
+  // { type: "DAILY" | "WEEKLY" | "MONTHLY", interval: 1, weekdays: [...] }
+
+  isDone Boolean @default(false)
+  doneAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@index([userId, remindAt])
+  @@index([userId, isDone])
+  @@index([userId, updatedAt])
+  @@index([userId, deletedAt])
+}
+
+model DayLink {
+  id String @id @default(cuid())
+
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  calendarDayId String
+  calendarDay CalendarDay @relation(fields: [calendarDayId], references: [id], onDelete: Cascade)
+
+  type DayLinkType
+  targetId String
+  label String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, calendarDayId])
+  @@index([calendarDayId])
+  @@index([type, targetId])
+}
+
+model Attachment {
+  id String @id @default(cuid())
+
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  journalPageId String?
+  journalPage JournalPage? @relation(fields: [journalPageId], references: [id], onDelete: Cascade)
+
+  noteId String?
+  note Note? @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  type AttachmentType
+
+  url String // где лежит файл
+  fileName String?
+  mimeType String?
+  sizeBytes Int?
+
+  meta Json? // (картинки: width/height, аудио: duration, файлы)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([journalPageId])
+  @@index([noteId])
+}
+
+model RefreshToken {
+  id String @id @default(cuid())
+
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash String
+
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  revokedAt DateTime?
+
+  deviceId String?
+  userAgent String?
+  ip String?
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([revokedAt])
+}
