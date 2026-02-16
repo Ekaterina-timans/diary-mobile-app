@@ -19,7 +19,7 @@ CREATE TABLE `Journal` (
     `id` VARCHAR(191) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
-    `appearence` JSON NULL,
+    `appearance` JSON NULL,
     `pinned` BOOLEAN NOT NULL DEFAULT false,
     `pinnedAt` DATETIME(3) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),

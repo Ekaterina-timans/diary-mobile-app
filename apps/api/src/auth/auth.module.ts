@@ -5,6 +5,7 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { AuthService } from './auth.service';
 import type { SignOptions } from 'jsonwebtoken';
+import { getJwtAccessSecret } from 'src/shared/config/jwt-secrets';
 
 // класс-модуль, в нём описаны зависимости, контроллеры и провайдеры
 @Module({
@@ -12,7 +13,7 @@ import type { SignOptions } from 'jsonwebtoken';
     PassportModule,
     // возвращает “сконфигурированный модуль”
     JwtModule.register({
-      secret: process.env.JWT_ACCESS_SECRET || 'dev_access_secret',
+      secret: getJwtAccessSecret(),
       signOptions: {
         expiresIn: (process.env.JWT_ACCESS_EXPIRES_IN as SignOptions['expiresIn']) ?? '30m',
       }, // access token будет жить 30 минут

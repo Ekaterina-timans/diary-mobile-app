@@ -5,11 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import type { JwtPayload } from './types/jwt-payload';
 import type { RefreshPayload } from './types/refresh-payload';
 import type { SignOptions } from 'jsonwebtoken';
-
-type AuthTokens = {
-  accessToken: string;
-  refreshToken: string;
-};
+import { AuthResponse, AuthTokens } from './types/auth-response';
 
 @Injectable()
 export class AuthService {
@@ -73,7 +69,7 @@ export class AuthService {
     deviceId?: string;
     userAgent?: string;
     ip?: string;
-  }) {
+  }): Promise<AuthResponse> {
     const email = params.email.toLowerCase().trim();
 
     const exists = await this.prisma.user.findUnique({ where: { email } });
@@ -135,7 +131,7 @@ export class AuthService {
     deviceId?: string;
     userAgent?: string;
     ip?: string;
-  }) {
+  }): Promise<AuthResponse> {
     const email = params.email.toLowerCase().trim();
 
     const user = await this.prisma.user.findFirst({
@@ -179,7 +175,7 @@ export class AuthService {
     deviceId?: string;
     userAgent?: string;
     ip?: string;
-  }) {
+  }): Promise<{ user: AuthResponse['user']; tokens: AuthTokens }> {
     let payload: RefreshPayload;
 
     try {
@@ -237,6 +233,11 @@ export class AuthService {
     });
 
     return {
+      user: {
+        id: tokenRecord.userId,
+        email: tokenRecord.user.email,
+        displayName: tokenRecord.user.displayName,
+      },
       tokens,
     };
   }

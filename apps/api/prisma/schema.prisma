@@ -74,7 +74,7 @@ model Journal {
 
   title String // название дневника
 
-  appearence Json? // индивидуальные настройки
+  appearance Json? // индивидуальные настройки
   // {
   //   paperStyle: "blank" | "lined" | "grid" | "dots",
   //   fontFamily: "...",

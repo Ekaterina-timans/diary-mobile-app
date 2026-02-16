@@ -6,11 +6,13 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller()
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
+  @Throttle({ default: { ttl: 3600, limit: 3 } })
   @Post('auth/register')
   register(@Body() dto: RegisterDto, @Req() req: Request, @Ip() ip: string) {
     return this.auth.register({
@@ -23,6 +25,7 @@ export class AuthController {
     });
   }
 
+  @Throttle({ default: { ttl: 60, limit: 5 } })
   @Post('auth/login')
   login(@Body() dto: LoginDto, @Req() req: Request, @Ip() ip: string) {
     return this.auth.login({
@@ -34,6 +37,7 @@ export class AuthController {
     });
   }
 
+  @Throttle({ default: { ttl: 60, limit: 60 } })
   @Post('auth/refresh')
   refresh(@Body() dto: RefreshDto, @Req() req: Request, @Ip() ip: string) {
     return this.auth.refresh({
