@@ -1,4 +1,8 @@
-import { YStack } from 'tamagui'
+import { LinearGradient } from 'expo-linear-gradient'
+import { View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { useTheme, YStack } from 'tamagui'
+import { AuroraBackground } from './background/AuroraBackground'
 
 // Это хороший layout-wrapper.
 // Он:
@@ -8,8 +12,15 @@ import { YStack } from 'tamagui'
 
 export function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <YStack flex={1} padding="$4" gap="$4" backgroundColor="$background">
-      {children}
-    </YStack>
+    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+      <YStack flex={1}>
+        <AuroraBackground />
+
+        {/* Контент поверх */}
+        <YStack flex={1} padding="$5" gap="$5">
+          {children}
+        </YStack>
+      </YStack>
+    </SafeAreaView>
   )
 }
