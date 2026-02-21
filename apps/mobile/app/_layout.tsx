@@ -13,10 +13,6 @@ import { tamaguiConfig } from '@/tamagui.config'
 
 export { ErrorBoundary } from 'expo-router'
 
-export const unstable_settings = {
-  initialRouteName: '(tabs)',
-}
-
 SplashScreen.preventAutoHideAsync()
 
 export default function RootLayout() {
@@ -32,9 +28,11 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (!loaded) return
-    bootstrap()
-    SplashScreen.hideAsync()
-  }, [loaded, bootstrap])
+    ;(async () => {
+      await bootstrap()
+      await SplashScreen.hideAsync()
+    })()
+  }, [loaded])
 
   if (!loaded) {
     return null

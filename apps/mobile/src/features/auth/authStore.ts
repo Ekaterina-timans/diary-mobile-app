@@ -1,7 +1,12 @@
 import { create } from 'zustand'
 import { AuthState } from './types'
-import { clearAccessToken, getAccessToken, saveAccessToken } from '@/src/shared/auth/tokenStore'
-import { getDevToken, getProfile } from '@/src/shared/auth/authApi'
+import {
+  clearTokens,
+  getAccessToken,
+  getRefreshToken,
+  saveTokens,
+} from '@/src/shared/auth/tokenStore'
+import { getProfile, login, logout, register } from '@/src/shared/auth/authApi'
 
 export const useAuthStore = create<AuthState>((set) => ({
   isReady: false,
@@ -9,9 +14,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
 
   bootstrap: async () => {
-    const token = await getAccessToken()
-    if (!token) {
-      set({ isReady: true, isAuthed: false, user: null })
+    const access = await getAccessToken()
+
+    if (!access) {
+      set({ isReady: true, isAuthed: false })
       return
     }
 
@@ -20,28 +26,50 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({
         isReady: true,
         isAuthed: true,
-        user: { sub: res.user.sub, email: res.user.email },
+        user: {
+          id: res.user.sub,
+          email: res.user.email,
+          displayName: '',
+        },
       })
     } catch {
-      await clearAccessToken()
+      await clearTokens()
       set({ isReady: true, isAuthed: false, user: null })
     }
   },
 
-  signInDev: async () => {
-    const { accessToken } = await getDevToken()
-    await saveAccessToken(accessToken)
-    const res = await getProfile()
+  signIn: async (email: string, password: string) => {
+    const res = await login({ email, password })
+    await saveTokens(res.tokens)
 
     set({
-      isReady: true,
       isAuthed: true,
-      user: { sub: res.user.sub, email: res.user.email },
+      user: res.user,
+    })
+  },
+
+  signUp: async (email: string, password: string, displayName: string) => {
+    const res = await register({ email, password, displayName })
+    await saveTokens(res.tokens)
+
+    set({
+      isAuthed: true,
+      user: res.user,
     })
   },
 
   signOut: async () => {
-    await clearAccessToken()
-    set({ isAuthed: false, user: null })
+    const refresh = await getRefreshToken()
+    if (refresh) {
+      // try {
+      //   await logout(refresh)
+      // } catch {}
+    }
+    await clearTokens()
+
+    set({
+      isAuthed: false,
+      user: null,
+    })
   },
 }))

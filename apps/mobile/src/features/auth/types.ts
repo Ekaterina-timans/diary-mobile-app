@@ -1,6 +1,7 @@
 export type AuthUser = {
-  sub: string
+  id: string
   email: string
+  displayName: string
 }
 
 export type AuthState = {
@@ -9,7 +10,8 @@ export type AuthState = {
   user: AuthUser | null
 
   bootstrap: () => Promise<void>
-  signInDev: () => Promise<void>
+  signIn: (email: string, password: string) => Promise<void>
+  signUp: (email: string, password: string, displayName: string) => Promise<void>
   signOut: () => Promise<void>
 }
 
