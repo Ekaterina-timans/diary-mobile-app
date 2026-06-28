@@ -10,7 +10,7 @@ import { useColorScheme } from '@/src/shared/ui/useColorScheme'
 import { useAuthStore } from '@/src/features/auth/authStore'
 import { TamaguiProvider } from 'tamagui'
 import { tamaguiConfig } from '@/tamagui.config'
-import { StackScreen } from 'react-native-screens'
+import { BiometricLock } from '@/src/features/auth/ui/BiometricLock'
 
 export { ErrorBoundary } from 'expo-router'
 
@@ -72,11 +72,13 @@ function RootLayoutNav() {
         config={tamaguiConfig}
         defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}
       >
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="auth/login" />
-          <Stack.Screen name="auth/register" />
-        </Stack>
+        <BiometricLock active={isAuthed}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="auth/login" />
+            <Stack.Screen name="auth/register" />
+          </Stack>
+        </BiometricLock>
       </TamaguiProvider>
     </ThemeProvider>
   )
