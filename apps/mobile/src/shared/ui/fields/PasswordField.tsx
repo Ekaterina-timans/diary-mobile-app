@@ -1,11 +1,17 @@
 import { useState } from 'react'
-import { YStack, Text, XStack } from 'tamagui'
-import { TextInput } from 'react-native'
+import { YStack, Text, XStack, useTheme } from 'tamagui'
+import { TextInput, TextInputProps } from 'react-native'
 import { Pressable } from 'react-native'
 import { Feather } from '@expo/vector-icons'
 
-export function PasswordField({ label, error, value, onChangeText, placeholder }: any) {
+type PasswordFieldProps = TextInputProps & {
+  label?: string
+  error?: string
+}
+
+export function PasswordField({ label, error, ...props }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false)
+  const theme = useTheme()
 
   return (
     <YStack gap="$2">
@@ -14,9 +20,9 @@ export function PasswordField({ label, error, value, onChangeText, placeholder }
       <XStack
         alignItems="center"
         borderRadius={20}
-        backgroundColor="rgba(255,255,255,0.65)"
+        backgroundColor={theme.surfaceGlass?.val ?? 'rgba(255,255,255,0.65)'}
         borderWidth={1}
-        borderColor={error ? '#EF4444' : 'rgba(255,255,255,0.6)'}
+        borderColor={error ? theme.danger?.val ?? '#EF4444' : theme.border?.val ?? 'rgba(255,255,255,0.6)'}
         height={56}
         paddingRight={16}
       >
@@ -26,23 +32,24 @@ export function PasswordField({ label, error, value, onChangeText, placeholder }
             paddingLeft: 20,
             paddingRight: 8,
             fontSize: 16,
+            color: theme.text?.val,
           }}
-          value={value}
-          onChangeText={onChangeText}
-          placeholder={placeholder}
+          {...props}
+          placeholderTextColor={theme.muted?.val}
           secureTextEntry={!visible}
           autoCapitalize="none"
           autoCorrect={false}
           textContentType="password"
+          selectionColor={theme.primary?.val}
         />
 
         <Pressable onPress={() => setVisible(!visible)}>
-          <Feather name={visible ? 'eye-off' : 'eye'} size={20} color="#5B4FBF" />
+          <Feather name={visible ? 'eye-off' : 'eye'} size={20} color={theme.primary?.val ?? '#5B4FBF'} />
         </Pressable>
       </XStack>
 
       {error ? (
-        <Text color="#EF4444" fontSize="$4">
+        <Text color="$danger" fontSize="$4">
           {error}
         </Text>
       ) : null}

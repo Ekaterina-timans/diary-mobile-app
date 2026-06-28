@@ -14,10 +14,15 @@ export function TextField({ label, error, ...props }: TextFieldProps) {
       <Input
         height={56}
         borderRadius={20}
-        backgroundColor="rgba(255,255,255,0.65)"
-        borderColor={error ? '#EF4444' : 'rgba(255,255,255,0.6)'}
+        backgroundColor="$surfaceGlass"
+        borderColor={error ? '$danger' : '$border'}
         borderWidth={1}
         paddingHorizontal={20}
+        color="$text"
+        placeholderTextColor="$muted"
+        focusStyle={{
+          borderColor: '$primary',
+        }}
         {...props}
       />
 
