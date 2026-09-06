@@ -38,7 +38,8 @@
         {
           "faceIDPermission": "Разрешить приложению использовать Face ID для защиты личных записей."
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true
