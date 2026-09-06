@@ -1,14 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt'; // ExtractJwt — утилита для извлечения токена из request
 import { JwtPayload } from './types/jwt-payload';
 import { getJwtAccessSecret } from 'src/shared/config/jwt-secrets';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 // Определяет как именно проверять JWT токены
 // Он нужен для Passport, чтобы Passport знал: откуда брать токен, чем его проверять и что возвращать как req.user
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private readonly prisma: PrismaService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // токен брать из заголовка
       ignoreExpiration: false, // токены с истёкшим exp считаются невалидными
@@ -16,7 +17,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: JwtPayload) {
+  async validate(payload: JwtPayload) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: payload.sub,
+      },
+      select: {
+        deletedAt: true,
+      },
+    });
+
+    if (!user || user.deletedAt) {
+      throw new UnauthorizedException('Account is deleted');
+    }
+
     return payload;
   }
 }

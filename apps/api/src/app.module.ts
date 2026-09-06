@@ -5,10 +5,12 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { UsersModule } from './users/users.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   // ttl (seconds) — длительность окна в секундах, limit — сколько запросов разрешено за одно такое окно
   imports: [
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60, limit: 300 }]),
     PrismaModule,
     AuthModule,
