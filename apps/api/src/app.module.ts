@@ -6,6 +6,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { UsersModule } from './users/users.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { JournalsModule } from './journals/journals.module';
 
 @Module({
   // ttl (seconds) — длительность окна в секундах, limit — сколько запросов разрешено за одно такое окно
@@ -15,6 +16,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     PrismaModule,
     AuthModule,
     UsersModule,
+    JournalsModule,
   ],
   controllers: [AppController],
   providers: [
