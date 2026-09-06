@@ -10,7 +10,8 @@ import { useColorScheme } from '@/src/shared/ui/useColorScheme'
 import { useAuthStore } from '@/src/features/auth/authStore'
 import { TamaguiProvider } from 'tamagui'
 import { tamaguiConfig } from '@/tamagui.config'
-import { BiometricLock } from '@/src/features/auth/ui/BiometricLock'
+import { AppLock } from '@/src/features/auth/ui/AppLock'
+import { restoreAppSwitcherProtection } from '@/src/shared/auth/appSwitcherSettings'
 
 export { ErrorBoundary } from 'expo-router'
 
@@ -31,6 +32,13 @@ export default function RootLayout() {
     if (!loaded) return
     ;(async () => {
       await bootstrap()
+
+      try {
+        await restoreAppSwitcherProtection()
+      } catch {
+        // System protection may be unavailable in the current runtime.
+      }
+
       await SplashScreen.hideAsync()
     })()
   }, [loaded])
@@ -72,13 +80,13 @@ function RootLayoutNav() {
         config={tamaguiConfig}
         defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}
       >
-        <BiometricLock active={isAuthed}>
+        <AppLock active={isAuthed}>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="auth/login" />
             <Stack.Screen name="auth/register" />
           </Stack>
-        </BiometricLock>
+        </AppLock>
       </TamaguiProvider>
     </ThemeProvider>
   )

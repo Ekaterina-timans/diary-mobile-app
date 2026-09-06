@@ -1,6 +1,10 @@
 import * as LocalAuthentication from 'expo-local-authentication'
 import { Platform } from 'react-native'
-
+/*
+Общий слой для работы с биометрией в приложении
+- Проверяет есть ли на устройстве биометрия и какая именно
+- Запускает саму проверку отпечатка или Face ID
+*/
 export type BiometricInfo = {
   isAvailable: boolean
   name: 'Face ID' | 'Touch ID' | 'Отпечаток пальца' | null

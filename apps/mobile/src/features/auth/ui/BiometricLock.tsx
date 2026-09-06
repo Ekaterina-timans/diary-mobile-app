@@ -7,6 +7,13 @@ import { Text, YStack } from "tamagui";
 import { Feather } from "@expo/vector-icons";
 import { Button } from "@/src/shared/ui/button/Button";
 
+/*
+“Замок” вокруг приложения
+- Не пускает пользователя в приложение сразу, если включена защита
+- Просит Face ID / Touch ID / отпечаток перед показом контента
+- Снова блокирует приложение, когда оно уходит в фон
+- Дает запасной путь через вход по паролю, если биометрия не сработала или пользователь не хочет ей пользоваться
+*/
 type Status = 'checking' | 'locked' | 'unlocked'
 
 export function BiometricLock({
@@ -15,14 +22,14 @@ export function BiometricLock({
 }: PropsWithChildren<{ active:boolean }>) {
   const signOut = useAuthStore((state) => state.signOut)
   const [status, setStatus] = useState<Status>('checking')
-  const authenticating = useRef(false)
-
+  const authenticating = useRef(false) // защита от повторных запросов
+  // Биометрическая блокировка пропускается: если пользователь не авторизован или если приложение открыто в браузере
   async function unlock() {
     if (!active || Platform.OS === 'web') {
       setStatus('unlocked')
       return
     }
-
+    // проверяется, не запущена ли биометрия
     if (authenticating.current) {
       return
     }
@@ -30,7 +37,7 @@ export function BiometricLock({
     authenticating.current = true
 
     try {
-      const enabled = await getBiometricEnabled()
+      const enabled = await getBiometricEnabled() // читает настройку
 
       if (!enabled) {
         setStatus('unlocked')
@@ -39,7 +46,7 @@ export function BiometricLock({
 
       setStatus('locked')
 
-      const result = await authenticateWithBiometrics()
+      const result = await authenticateWithBiometrics() // открывает системное окно Face ID / Touch ID
 
       if (result.success) {
         setStatus('unlocked')
@@ -50,12 +57,12 @@ export function BiometricLock({
       authenticating.current = false
     }
   }
-
+  // вход по паролю
   async function loginWithPassword() {
-    await setBiometricEnabled(false)
-    await signOut()
+    await setBiometricEnabled(false) // Отключает биометрическую настройку
+    await signOut() // Удаляет токены
   }
-
+  // Проверка после авторизации
   useEffect(() => {
     if (!active) {
       setStatus('checking')
@@ -64,9 +71,9 @@ export function BiometricLock({
 
     void unlock()
   }, [active])
-
+  // Возвращение из фона
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextState) => {
+    const subscription = AppState.addEventListener('change', (nextState) => { // следит за состоянием приложения
       if (!active) {
         return
       }
@@ -79,7 +86,7 @@ export function BiometricLock({
     })
     return () => subscription.remove()
   }, [active])
-
+  // Отображение интерфейса
   if (!active || status === 'unlocked') {
     return children
   }

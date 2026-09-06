@@ -1,5 +1,5 @@
 import { deleteSecureItem, getSecureItem, setSecureItem } from '../storage/secureStore'
-
+// Читаем из SecureStore значение, вкл. ли биометрия или нет
 const BIOMETRIC_ENABLED_KEY = 'biometric_enabled'
 
 export async function getBiometricEnabled() {
