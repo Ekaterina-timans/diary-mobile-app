@@ -1,29 +1,52 @@
-import { useEffect, useState } from "react"
-import { JournalPage } from "../../model/journal.types"
-import { openJournalPage } from "../../model/journal.api"
-import { Text, YStack } from "tamagui"
-import { ActivityIndicator } from "react-native"
-import { Card } from "@/src/shared/ui/cards/Card"
-import { Button } from "@/src/shared/ui/button/Button"
-import { Header } from "@/src/shared/ui/navigation/Header"
+import { useEffect, useState } from 'react'
+import { JournalPage } from '../../model/journal.types'
+import { openJournalPage } from '../../model/journal.api'
+import { Text, YStack } from 'tamagui'
+import { ActivityIndicator } from 'react-native'
+import { Card } from '@/src/shared/ui/cards/Card'
+import { Button } from '@/src/shared/ui/button/Button'
+import { Header } from '@/src/shared/ui/navigation/Header'
 import { JournalPageEditor } from '../editor/JournalPageEditor'
+import { useAuthStore } from '@/src/features/auth/authStore'
+import { getJournalPageDraft } from '../../storage/journalPageDraft.repository'
 
 type JournalPageReaderProps = {
   pageId: string
 }
 
 export function JournalPageReader({ pageId }: JournalPageReaderProps) {
+  const userId = useAuthStore((state) => state.user?.id)
   const [page, setPage] = useState<JournalPage | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   async function loadPage() {
+    if (!userId) {
+      setError('Не удалось определить текущего пользователя.')
+      setIsLoading(false)
+      return
+    }
+
     try {
       setIsLoading(true)
       setError(null)
 
-      const nextPage = await openJournalPage(pageId)
-      setPage(nextPage)
+      const [serverPage, draft] = await Promise.all([
+        openJournalPage(pageId),
+        getJournalPageDraft(userId, pageId),
+      ])
+
+      if (draft?.isDirty) {
+        setPage({
+          ...serverPage,
+          contentJson: draft.contentJson,
+          contentPlain: draft.contentPlain,
+          revision: draft.revision,
+        })
+        return
+      }
+
+      setPage(serverPage)
     } catch {
       setError('Не удалось открыть страницу. Попробуйте ещё раз.')
     } finally {
@@ -33,7 +56,7 @@ export function JournalPageReader({ pageId }: JournalPageReaderProps) {
 
   useEffect(() => {
     void loadPage()
-  }, [pageId])
+  }, [pageId, userId])
 
   if (isLoading) {
     return (
@@ -43,7 +66,7 @@ export function JournalPageReader({ pageId }: JournalPageReaderProps) {
     )
   }
 
-  if (error || !page) {
+  if (error || !page || !userId) {
     return (
       <YStack flex={1} justifyContent="center" gap="$4">
         <Card gap="$3">
@@ -66,7 +89,7 @@ export function JournalPageReader({ pageId }: JournalPageReaderProps) {
         Страница {page.pageIndex + 1}
       </Text>
 
-      <JournalPageEditor page={page} />
+      <JournalPageEditor page={page} userId={userId} />
     </YStack>
   )
 }
