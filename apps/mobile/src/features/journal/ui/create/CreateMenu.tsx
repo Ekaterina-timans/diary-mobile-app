@@ -81,7 +81,7 @@ export function CreateMenu({
         }}
       >
         <Pressable
-          accessibilityLabel="Закрыть"
+          accessibilityLabel="Закрыть меню касанием вне окна"
           onPress={onClose}
           style={{
             position: 'absolute',
@@ -108,7 +108,7 @@ export function CreateMenu({
             </Text>
 
             <Pressable
-              accessibilityLabel="Закрыть"
+              accessibilityLabel="Закрыть меню"
               hitSlop={12}
               onPress={onClose}
             >
