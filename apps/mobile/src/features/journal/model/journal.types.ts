@@ -1,3 +1,4 @@
+// Основные модели, которые мобильное приложение получает от API дневника.
 export type JournalFolder = {
   id: string
   title: string
@@ -11,6 +12,7 @@ export type JournalFolder = {
   }
 }
 
+// Краткая информация о папке, вложенная в ответ о журнале.
 export type JournalFolderPreview = Pick<JournalFolder, 'id' | 'title' | 'icon' | 'color'>
 
 export type Journal = {
@@ -30,6 +32,7 @@ export type Journal = {
   }
 }
 
+// Лёгкая версия страницы для списка страниц внутри журнала.
 export type JournalPagePreview = {
   id: string
   pageIndex: number
@@ -39,10 +42,13 @@ export type JournalPagePreview = {
   updatedAt: string
 }
 
+// Полный журнал для экрана чтения: вместо счётчика содержит реальные страницы.
 export type JournalDetails = Omit<Journal, '_count'> & {
   pages: JournalPagePreview[]
 }
 
+// Полное содержимое одной страницы. JSON хранит форматирование Tiptap,
+// а plain-текст нужен для превью и будущего поиска.
 export type JournalPage = {
   id: string
   journalId: string
@@ -57,6 +63,7 @@ export type JournalPage = {
   journal: Pick<Journal, 'id' | 'title' | 'appearance'>
 }
 
+// Payload-типы описывают данные, которые приложение отправляет на API.
 export type CreateJournalFolderPayload = {
   title: string
   icon?: string
@@ -67,4 +74,10 @@ export type CreateJournalPayload = {
   title: string
   folderId?: string | null
   appearance?: Record<string, unknown>
+}
+
+export type UpdateJournalPagePayload = {
+  contentJson: Record<string, unknown>
+  contentPlain: string
+  expectedRevision: number
 }
