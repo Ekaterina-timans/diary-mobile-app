@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons'
 
+// Конфигурация строк главного экрана настроек: иконка, подпись и маршрут назначения.
 export type FeatherIconName = keyof typeof Feather.glyphMap
 
 export type SettingsItemConfig = {
@@ -9,6 +10,8 @@ export type SettingsItemConfig = {
   route: string
 }
 
+// Экран настроек строит список из этой конфигурации, поэтому добавление нового раздела
+// обычно начинается с новой записи здесь.
 export const SETTINGS_ITEMS: SettingsItemConfig[] = [
   {
     key: 'profile',

@@ -1,6 +1,8 @@
 import * as Crypto from 'expo-crypto'
 import { deleteSecureItem, getSecureItem, setSecureItem } from '../storage/secureStore'
-// отвечает только за безопасное хранение и проверку PIN-кода
+
+// Отвечает за безопасное хранение и проверку PIN-кода. Сам PIN не сохраняется:
+// в SecureStore лежат только соль и необратимый SHA-256 хеш.
 const PIN_HASH_KEY = 'pin_hash'
 const PIN_SALT_KEY = 'pin_salt'
 // Преобразует PIN в длинную зашифрованную строку — хеш

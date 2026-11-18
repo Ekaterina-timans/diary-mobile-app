@@ -15,17 +15,21 @@ export interface CalendarDayItem {
   isToday: boolean
 }
 
+// Строит сетку календаря для выбранного месяца: добавляет дни соседних месяцев,
+// чтобы календарь всегда начинался с понедельника и заканчивался воскресеньем.
 export function useCalendar(currentMonth: Date) {
   return useMemo(() => {
     const monthStart = startOfMonth(currentMonth)
     const monthEnd = endOfMonth(currentMonth)
 
-    const gridStart = startOfWeek(monthStart, { weekStartsOn: 1 }) // понедельник
+    // Границы полной сетки, а не только первого и последнего дня текущего месяца.
+    const gridStart = startOfWeek(monthStart, { weekStartsOn: 1 })
     const gridEnd = endOfWeek(monthEnd, { weekStartsOn: 1 })
 
     const days: CalendarDayItem[] = []
     let day = gridStart
 
+    // Последовательно формируем объекты для ячеек календаря.
     while (day <= gridEnd) {
       days.push({
         date: day,

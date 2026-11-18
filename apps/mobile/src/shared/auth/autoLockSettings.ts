@@ -1,5 +1,6 @@
 import { getSecureItem, setSecureItem } from "../storage/secureStore"
 
+// Хранит выбранную задержку перед повторной блокировкой приложения.
 const AUTO_LOCK_KEY = 'auto_lock_delay'
 
 export type AutoLockOption = 
@@ -18,6 +19,7 @@ const AUTO_LOCK_DELAYS: Record<Exclude<AutoLockOption, 'never'>, number> = {
   '15_minute': 15 * 60 * 1000,
 }
 
+// Проверяет, что прочитанное из SecureStore значение входит в допустимый список.
 function isAutoLockOption(value: string): value is AutoLockOption {
   return (
     value === 'immediately' ||

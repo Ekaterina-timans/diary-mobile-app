@@ -8,11 +8,15 @@ import {
 } from '@/src/shared/auth/tokenStore'
 import { getProfile, login, logout, register } from '@/src/shared/auth/authApi'
 
+// Единое Zustand-хранилище с состоянием сессии. Его читают роуты и экраны,
+// чтобы понимать, завершена ли проверка авторизации и кто вошёл в приложение.
 export const useAuthStore = create<AuthState>((set) => ({
   isReady: false,
   isAuthed: false,
   user: null,
 
+  // Восстанавливает сессию при запуске: проверяет токен на устройстве,
+  // затем запрашивает профиль, чтобы убедиться, что токен ещё действителен.
   bootstrap: async () => {
     const access = await getAccessToken()
 
@@ -38,6 +42,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
+  // Входит в существующий аккаунт, сохраняет токены в SecureStore
+  // и обновляет глобальное состояние приложения.
   signIn: async (email: string, password: string) => {
     const res = await login({ email, password })
     await saveTokens(res.tokens)
@@ -48,6 +54,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     })
   },
 
+  // Регистрирует пользователя и сразу создаёт локальную авторизованную сессию.
   signUp: async (email: string, password: string, displayName: string) => {
     const res = await register({ email, password, displayName })
     await saveTokens(res.tokens)
@@ -58,9 +65,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     })
   },
 
+  // Завершает сессию на устройстве: удаляет сохранённые токены и пользователя из Zustand.
   signOut: async () => {
     const refresh = await getRefreshToken()
     if (refresh) {
+      // Позже здесь можно включить отзыв refresh-токена на сервере.
       // try {
       //   await logout(refresh)
       // } catch {}

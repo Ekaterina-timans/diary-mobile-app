@@ -1,5 +1,6 @@
 import z from 'zod'
 
+// Проверяет форму создания папки до отправки данных на сервер.
 export const createFolderSchema = z.object({
   title: z
     .string()
@@ -8,6 +9,7 @@ export const createFolderSchema = z.object({
     .max(80, 'Название папки слишком длинное'),
 })
 
+// Проверяет форму создания журнала. Папка может не выбираться.
 export const createJournalSchema = z.object({
   title: z
     .string()
@@ -18,5 +20,6 @@ export const createJournalSchema = z.object({
   folderId: z.string().nullable(),
 })
 
+// Типы полей форм выводятся из схем, чтобы правила валидации и TypeScript не расходились.
 export type CreateFolderFormValues = z.infer<typeof createFolderSchema>
 export type CreateJournalFormValues = z.infer<typeof createJournalSchema>

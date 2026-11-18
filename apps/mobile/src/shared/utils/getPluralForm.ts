@@ -1,5 +1,6 @@
 type WordForms = readonly [one: string, few: string, many: string]
 
+// Выбирает правильную русскую форму слова: «1 журнал», «2 журнала», «5 журналов».
 export function getPluralForm(count: number, [one, few, many]: WordForms) {
   const value = Math.abs(count)
 

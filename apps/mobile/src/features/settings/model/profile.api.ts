@@ -1,5 +1,6 @@
 import { api } from "@/src/shared/api/client"
 
+// Типы ответов и запросов, которые используются только на экранах профиля.
 export type ProfileDto = {
   id: string
   email: string
@@ -17,16 +18,19 @@ export type ChangePasswordDto = {
   newPassword: string
 }
 
+// Загружает данные текущего пользователя для формы профиля.
 export async function getProfile(): Promise<ProfileDto> {
   const { data } = await api.get('/users/profile')
   return data
 }
 
+// Отправляет изменённые имя или email и возвращает обновлённый профиль.
 export async function updateProfile(payload: UpdateProfileDto): Promise<ProfileDto> {
   const { data } = await api.patch('/users/profile', payload)
   return data
 }
 
+// Передаёт текущий и новый пароль для безопасной смены пароля на сервере.
 export async function changePassword(payload: ChangePasswordDto): Promise<{ ok: true }> {
   const { data } = await api.patch('/users/profile/password', payload)
   return data

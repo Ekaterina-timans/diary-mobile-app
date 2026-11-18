@@ -2,6 +2,8 @@ import { Platform } from 'react-native'
 import { deleteSecureItem, getSecureItem, setSecureItem } from '../storage/secureStore'
 import * as ScreenCapture from 'expo-screen-capture'
 
+// Управляет защитой превью приложения в переключателе приложений.
+// На iOS используется размытие, а Android также запрещает снимки и запись экрана.
 const APP_SWITCHER_ENABLED_KEY = 'app_switcher_protection_enable'
 const SCREEN_CAPTURE_KEY = 'app_switcher_protection'
 // Читает настройку
@@ -9,6 +11,7 @@ export async function getAppSwitcherProtectionEnabled() {
   return (await getSecureItem(APP_SWITCHER_ENABLED_KEY)) === 'true'
 }
 
+// Применяет системную защиту для текущей платформы, не сохраняя пользовательскую настройку.
 async function applyAppSwitcherProtection(enabled: boolean) {
   if (Platform.OS === 'web') {
     return

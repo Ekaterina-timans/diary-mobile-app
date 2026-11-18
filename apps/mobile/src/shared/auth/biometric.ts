@@ -9,7 +9,7 @@ export type BiometricInfo = {
   isAvailable: boolean
   name: 'Face ID' | 'Touch ID' | 'Отпечаток пальца' | null
 }
-// узнаёт возможности устройства
+// Проверяет датчик, наличие добавленной биометрии и определяет её понятное название для UI.
 export async function getBiometricInfo(): Promise<BiometricInfo> {
   const [hasHardware, isEnrolled, supportedTypes] = await Promise.all([
     LocalAuthentication.hasHardwareAsync(), // есть ли биометрический датчик
@@ -39,6 +39,7 @@ export async function getBiometricInfo(): Promise<BiometricInfo> {
   }
 }
 
+// Показывает системный диалог Face ID / Touch ID и возвращает его результат.
 export async function authenticateWithBiometrics() {
   return LocalAuthentication.authenticateAsync({
     promptMessage: 'Вход в дневник',

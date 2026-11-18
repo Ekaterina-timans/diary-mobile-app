@@ -1,6 +1,8 @@
 const tintColorLight = '#2f95dc';
 const tintColorDark = '#fff';
 
+// Базовая палитра светлой и тёмной тем. Она используется там, где компонентам
+// ещё не переданы токены Tamagui.
 export default {
   light: {
     text: '#000',

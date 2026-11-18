@@ -1,3 +1,4 @@
+// Типы, которые описывают пользователя и публичный интерфейс Zustand-хранилища авторизации.
 export type AuthUser = {
   id: string
   email: string
@@ -15,6 +16,7 @@ export type AuthState = {
   signOut: () => Promise<void>
 }
 
+// Ответ эндпоинта профиля, где поля пользователя берутся из JWT на сервере.
 export type ProfileResponse = {
   user: {
     sub: string

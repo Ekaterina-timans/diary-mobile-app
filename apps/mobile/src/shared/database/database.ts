@@ -1,5 +1,6 @@
 import * as SQLite from 'expo-sqlite'
 
+// Кэширует одно подключение, чтобы все репозитории работали с одной локальной базой.
 let databasePromise: Promise<SQLite.SQLiteDatabase> | null = null
 // Открывает локальную базу дневника один раз и возвращает общее подключение к ней.
 export function getDatabase() {
